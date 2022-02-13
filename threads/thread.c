@@ -24,6 +24,8 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
+static struct list waitQueue;
+
 /* List of all processes.  Processes are added to this list
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
@@ -92,6 +94,7 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  list_init (&waitQueue);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -162,6 +165,55 @@ thread_print_stats (void)
    The code provided sets the new thread's `priority' member to
    PRIORITY, but no actual priority scheduling is implemented.
    Priority scheduling is the goal of Problem 1-3. */
+
+void insertar_en_lista_espera(int64_t ticks){
+
+	//Deshabilitamos interrupciones
+	enum intr_level old_level;
+	old_level = intr_disable ();
+
+	/* Remover el thread actual de "ready_list" e insertarlo en "lista_espera"
+	Cambiar su estatus a THREAD_BLOCKED, y definir su tiempo de expiracion */
+	
+	struct thread *thread_actual = thread_current ();
+  thread_actual->tim_sleep = timer_ticks() + ticks;
+  
+  /*Donde TIEMPO_DORMIDO es el atributo de la estructura thread que usted
+	  definió como paso inicial*/
+	
+  list_push_back(&waitQueue, &thread_actual->elem);
+  thread_block();
+
+  //Habilitar interrupciones
+	intr_set_level (old_level);
+}
+
+void remover_thread_durmiente(int64_t ticks){
+
+	/*Cuando ocurra un timer_interrupt, si el tiempo del thread ha expirado
+	Se mueve de regreso a ready_list, con la funcion thread_unblock*/
+	
+	//Iterar sobre "lista_espera"
+	struct list_elem *iter = list_begin(&waitQueue);
+	while(iter != list_end(&waitQueue) ){
+		struct thread *thread_lista_espera= list_entry(iter, struct thread, elem);
+		
+		/*Si el tiempo global es mayor al tiempo que el thread permanecía dormido
+		  entonces su tiempo de dormir ha expirado*/
+		
+		if(ticks >= thread_lista_espera->tim_sleep){
+			//Lo removemos de "lista_espera" y lo regresamos a ready_list
+			iter = list_remove(iter);
+			thread_unblock(thread_lista_espera);
+		}else{
+			//Sino, seguir iterando
+			iter = list_next(iter);
+		}
+	}
+  
+}
+
+
 tid_t
 thread_create (const char *name, int priority,
                thread_func *function, void *aux) 
