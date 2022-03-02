@@ -272,6 +272,10 @@ thread_block (void)
   schedule ();
 }
 
+
+
+
+
 /* Transitions a blocked thread T to the ready-to-run state.
    This is an error if T is not blocked.  (Use thread_yield() to
    make the running thread ready.)
@@ -280,6 +284,12 @@ thread_block (void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
+
+
+
+
+
+
 void
 thread_unblock (struct thread *t) 
 {
@@ -383,19 +393,57 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
-/* Sets the current thread's priority to NEW_PRIORITY. */
+
+
+
+
+
+
+
+/*ROUND ROBIN RR SCHEDULLING, 
+PRI_MIN (0) a PRI_MAX (63), 
+prioridad inicial es pasada como argumento, sino hay una funcion especifica entonces
+se utiliza PRI_DEFAULT(31)
+
+fila de threads -> ready_list
+Sets the current thread's priority to NEW_PRIORITY. 
+
+diferentes ramas para que c/rama se especialice entre si
+*/
 void
 thread_set_priority (int new_priority) 
 {
-  thread_current ()->priority = new_priority;
+      thread_current ()->priority = new_priority;
+ 
+    thread_yield();  
+ 
+
+
+  
+
 }
+
+
+
+
+
 
 /* Returns the current thread's priority. */
 int
 thread_get_priority (void) 
 {
   return thread_current ()->priority;
+ //if()
+  list_push_back (&ready_list, &t->elem);
+
 }
+
+
+
+
+
+
+
 
 /* Sets the current thread's nice value to NICE. */
 void
