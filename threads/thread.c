@@ -386,19 +386,51 @@ thread_foreach (thread_action_func *func, void *aux)
     }
 }
 
-/* Sets the current thread's priority to NEW_PRIORITY. */
+
+
+
+/* 
+.........................................................
+candidatos ready list
+thread_unblock
+
+*/
+
+
+/* Sets the current thread's priority to NEW_PRIORITY. 
+Establece la prioridad del hilo actual en NEW_PRIORITY.
+Thread_current <- thread actual
+*/
 void
 thread_set_priority (int new_priority) 
 {
+
+
+  struct thread *thread_actual = thread_current ();
+
   thread_current ()->priority = new_priority;
+  thread_yield();
+  thread_create();
+
 }
 
-/* Returns the current thread's priority. */
+
+/* Returns the current thread's priority. 
+Devuelve la prioridad del subproceso actual.
+*/
 int
 thread_get_priority (void) 
 {
   return thread_current ()->priority;
 }
+
+
+
+
+/*
+.........................................................
+*/
+
 
 /* Sets the current thread's nice value to NICE. */
 void
